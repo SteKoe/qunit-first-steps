@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>QUnit Example</title>
+<link rel="stylesheet" href="libs/qunit/qunit.css">
+</head>
+<body>
+	<div id="qunit"></div>
+	<div id="qunit-fixture"></div>
+	<script src="libs/jquery/jquery.js"></script>
+	<script src="libs/qunit/qunit.js"></script>
+	
+	<script src="trac-team-sprint-updater.user.js"></script>
+	<script>
+		var tu = new TracUpdateSprintDates();
+		test("Updater returns current date.", function() {
+			equal(tu.getCurrentDate().getTime(), new Date().getTime(), "Dates should be equal!");
+		});
+		
+		test("sprintStartAndEndForOddWeek", function() {
+			// Overwrite getCurrentDate to return 4.6.2014
+			tu.getCurrentDate = function() {
+				return new Date(2014,5,4);
+			}
+			var sprintStartAndEnd = tu.getSprintStartAndEndDate();
+
+			notEqual(sprintStartAndEnd.start, null, "StartDate is not null!");
+			equal(sprintStartAndEnd.start.getTime(), new Date(2014,5,2).getTime(), "Startdate ist first monday in sprint!");
+			equal(sprintStartAndEnd.end.getTime(), new Date(2014,5,13).getTime(), "Enddate ist last friday in sprint!");
+		});
+		test("sprintStartAndEndForEvenWeek", function() {
+			// Overwrite getCurrentDate to return 9.6.2014
+			tu.getCurrentDate = function() {
+				return new Date(2014,5,9);
+			}
+			var sprintStartAndEnd = tu.getSprintStartAndEndDate();
+
+			notEqual(sprintStartAndEnd.start, null, "StartDate is not null!");
+			equal(sprintStartAndEnd.start.getTime(), new Date(2014,5,2).getTime(), "Startdate ist first monday in sprint!");
+			equal(sprintStartAndEnd.end.getTime(), new Date(2014,5,13).getTime(), "Enddate ist last friday in sprint!");
+		});
+		
+		test("sprintStartAndEndForOddWeekOnNextSprint", function() {
+			// Overwrite getCurrentDate to return 4.6.2014
+			tu.getCurrentDate = function() {
+				return new Date(2014,5,4);
+			}
+			var sprintStartAndEnd = tu.getSprintStartAndEndDate(1);
+
+			notEqual(sprintStartAndEnd.start, null, "StartDate is not null!");
+			equal(sprintStartAndEnd.start.getTime(), new Date(2014,5,16).getTime(), "Startdate ist first monday in sprint!");
+			equal(sprintStartAndEnd.end.getTime(), new Date(2014,5,27).getTime(), "Enddate ist last friday in sprint!");
+		});
+		test("sprintStartAndEndForEvenWeekOnNextSprint", function() {
+			// Overwrite getCurrentDate to return 4.6.2014
+			tu.getCurrentDate = function() {
+				return new Date(2014,5,9);
+			}
+			var sprintStartAndEnd = tu.getSprintStartAndEndDate(1);
+
+			notEqual(sprintStartAndEnd.start, null, "StartDate is not null!");
+			equal(sprintStartAndEnd.start.getTime(), new Date(2014,5,16).getTime(), "Startdate ist first monday in sprint!");
+			equal(sprintStartAndEnd.end.getTime(), new Date(2014,5,27).getTime(), "Enddate ist last friday in sprint!");
+		});
+		
+		test("sprintStartAndEndForYearEnd", function() {
+			// Overwrite getCurrentDate to return 30.12.2014
+			tu.getCurrentDate = function() {
+				return new Date(2014,11,30);
+			}
+			var sprintStartAndEnd = tu.getSprintStartAndEndDate(0);
+
+			notEqual(sprintStartAndEnd.start, null, "StartDate is not null!");
+			equal(sprintStartAndEnd.start.getTime(), new Date(2014,11,29).getTime(), "Startdate ist first monday in sprint!");
+			equal(sprintStartAndEnd.end.getTime(), new Date(2015,0,9).getTime(), "Enddate ist last friday in sprint!");
+		});
+		
+		test("getWeek", function() {
+			tu.getCurrentDate = function() {
+				return new Date(2014,11,30);
+			}
+			equal(tu.getCurrentDate().getWeek(), 53);
+		});
+		
+		test("getSprintStartAndEndWeeks", function() {
+			tu.getCurrentDate = function() {
+				return new Date(2014,5,4);
+			}
+			equal(tu.getSprintStartAndEndWeeks(), "2014 KW23-24");
+		});
+	</script>
+</body>
+</html>
